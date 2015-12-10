@@ -68,22 +68,28 @@ function package_name {
 
 TMP_DOWNLOAD_DIR="$(mktemp -d)"
 
+PACKAGE_ARCHIVES=""
 for PACKAGE in $OPENCONDA_PACKAGES
 do
     PACKAGE_NAME=$(package_name $PACKAGE)
     PACKAGE_VERSION=$(package_version $PACKAGE)
     echo "Retrieving ${PACKAGE_NAME} version ${PACKAGE_VERSION}"
     get_file "${PACKAGE}" "${TMP_DOWNLOAD_DIR}"
+    PACKAGE_ARCHIVES="$PACKAGE_ARCHIVES $(package_filename $PACKAGE)"
 done
 
 echo "Creating blob archive ${OPENCONDA_RELEASE}.tar.gz"
-pushd "${TMP_DOWNLOAD_DIR}" > /dev/null
-tar czf "${OPENCONDA_RELEASE}.tar.gz" \
-    "<<<PACKAGES HERE>>>"
-popd > /dev/null
+cd "${TMP_DOWNLOAD_DIR}"
+tar czf "${OPENCONDA_RELEASE}.tar.gz" ${PACKAGE_ARCHIVES}
+cd - > /dev/null
 
 echo "Generating installer in dist/${OPENCONDA_RELEASE}.sh"
 mkdir -p dist
 cp installer-template.sh "dist/${OPENCONDA_RELEASE}.sh"
+sed -i "s/__OPENCONDA_VERSION__/${OPENCONDA_VERSION}/g" "dist/${OPENCONDA_RELEASE}.sh"
+sed -i "s/__OPENCONDA_ARCH__/${OPENCONDA_ARCH}/g" "dist/${OPENCONDA_RELEASE}.sh"
+sed -i "s/__OPENCONDA_PACKAGES__/${PACKAGE_ARCHIVES}/g" "dist/${OPENCONDA_RELEASE}.sh"
+sed -i "s/__OPENCONDA_RELEASE__/${OPENCONDA_RELEASE}/g" "dist/${OPENCONDA_RELEASE}.sh"
+cat "${TMP_DOWNLOAD_DIR}/${OPENCONDA_RELEASE}.tar.gz" >> "dist/${OPENCONDA_RELEASE}.sh"
 
 rm -rf "${TMP_DOWNLOAD_DIR}"

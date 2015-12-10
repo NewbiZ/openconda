@@ -1,54 +1,52 @@
 #/bin/sh
 
+# Default OpenConda installation directory
+OPENCONDA_PREFIX="${HOME}/openconda"
+
+# Variables templated during generation of the installer
 OPENCONDA_VERSION="__OPENCONDA_VERSION__"
-CONDA_VERSION="__CONDA_VERSION__"
-VIRTUALENV_VERSION="__VIRTUALENV_VERSION__"
-CONDA_ARCHIVE="__CONDA_ARCHIVE__"
-VIRTUALENV_ARCHIVE="__VIRTUALENV_ARCHIVE__"
-PREFIX="${HOME}/openconda"
-ARCH="$(uname -m)"
+OPENCONDA_ARCH="__OPENCONDA_ARCH__"
+OPENCONDA_RELEASE="__OPENCONDA_RELEASE__"
+OPENCONDA_PACKAGES="__OPENCONDA_PACKAGES__"
 
-echo "OpenConda ${OPENCONDA_VERSION} installer"
+echo "OpenConda ${OPENCONDA_RELEASE}"
+echo "Version:      ${OPENCONDA_VERSION}"
+echo "Architecture: ${OPENCONDA_ARCH}"
+echo "Prefix:       ${OPENCONDA_PREFIX}"
 
-echo "OpenConda version: ${OPENCONDA_VERSION}"
-echo "Conda version: ${CONDA_VERSION}"
-echo "Prefix: ${PREFIX}"
-
-# Check for python
-python --version > /dev/null
-if test "$?" != "0"
+# Check for proper architecture
+if [ "$(uname -m)" != "${OPENCONDA_ARCH}" ]
 then
-    echo "Cannot find a suitable python binary. Please install python"
-    echo "or create a 'python' symlink pointing to your python version."
-    echo "e.g.: ln -s /usr/local/bin/python2.7 /usr/local/bin/python"
+    echo ""
+    echo "This release of OpenConda was built for the ${OPENCONDA_ARCH}"
+    echo "architecture. Your architecture ($(uname -m)) does not match."
     exit 1
 fi
 
-# Check for proper architecture
-case "${ARCH}" in
-    amd64|x86_64)
-        echo "Platform: ${ARCH}"
-        ;;
-    *)
-        echo "This release of OpenConda was built for 64bits platforms."
-        echo "Your platform ($ARCH) is not supported."
-        exit 1
-        ;;
-esac;
+# Create main prefix directory
+mkdir -p "${OPENCONDA_PREFIX}"
 
+# Extract all packages in a temporary directory
 TMP_EXTRACT_DIR=$(mktemp -d)
 ARCHIVE_OFFSET=$(awk '/^__ARCHIVE__/ {print NR + 1; exit 0; }' $0)
-tail -n+$ARCHIVE_OFFSET $0 | tar xzvf - -C "${TMP_EXTRACT_DIR}"
+tail -n+$ARCHIVE_OFFSET $0 | tar xzf - -C "${TMP_EXTRACT_DIR}"
 cd "${TMP_EXTRACT_DIR}"
-tar xzf "${VIRTUALENV_ARCHIVE}"
-tar xjf "${CONDA_ARCHIVE}"
-echo "Creating conda virtual in ${PREFIX}"
-"${TMP_EXTRACT_DIR}/virtualenv-${VIRTUALENV_VERSION}/virtualenv.py" "${PREFIX}" > /dev/null
-echo "Installing conda"
-"${PREFIX}/bin/pip" install "${TMP_EXTRACT_DIR}/conda-${CONDA_VERSION}" > /dev/null
+
+# Extract all packages in the $PREFIX/pkgs directory
+mkdir -p "${OPENCONDA_PREFIX}/pkgs"
+for PACKAGE in ${OPENCONDA_PACKAGES}
+do
+    echo "Extracting ${PACKAGE} ..."
+    mkdir -p "${OPENCONDA_PREFIX}/pkgs/$(basename ${PACKAGE})"
+    tar xjf "${PACKAGE}" -C "${OPENCONDA_PREFIX}/pkgs/$(basename ${PACKAGE})"
+    rm -rf "${PACKAGE}"
+done
+
+# Remove temporary extraction directory
 cd - > /dev/null
-echo "${TMP_EXTRACT_DIR}"
 rm -rf "${TMP_EXTRACT_DIR}"
+
+# Use conda script to install all packages in the environment
 
 exit 0
 
