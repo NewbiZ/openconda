@@ -13,7 +13,16 @@ OPENCONDA_PACKAGES="
     /home/avallee/workspace/openconda/packages/python-2.7.11-0.tar.bz2
     /home/avallee/workspace/openconda/packages/readline-6.3.0-0.tar.bz2
     /home/avallee/workspace/openconda/packages/sqlite-3.9.2-0.tar.bz2
-    /home/avallee/workspace/openconda/packages/zlib-1.2.8-0.tar.bz2"
+    /home/avallee/workspace/openconda/packages/zlib-1.2.8-0.tar.bz2
+    /home/avallee/workspace/openconda/packages/conda-3.18.8-py27_0.tar.bz2
+    /home/avallee/workspace/openconda/packages/conda-env-2.4.5-py27_0.tar.bz2
+    /home/avallee/workspace/openconda/packages/pip-7.1.2-py27_0.tar.bz2
+    /home/avallee/workspace/openconda/packages/setuptools-18.5-py27_0.tar.bz2
+    /home/avallee/workspace/openconda/packages/wheel-0.26.0-py27_1.tar.bz2
+    /home/avallee/workspace/openconda/packages/pyyaml-3.11-py27_1.tar.bz2
+    /home/avallee/workspace/openconda/packages/requests-2.8.1-py27_0.tar.bz2
+    /home/avallee/workspace/openconda/packages/pycosat-0.6.1-py27_0.tar.bz2
+    /home/avallee/workspace/openconda/packages/jinja2-2.8-py27_0.tar.bz2"
 
 # Retrieve files from different locations and copy them to
 # a local directory
